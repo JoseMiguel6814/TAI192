@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from typing import Optional
 
 
@@ -20,55 +20,38 @@ usuarios = [
 @app.get("/",tags=["hola mundo"]) 
 def home():
     return {"message": "Hello World"}
+
+
+
+
+#endpoint Consultar Todos
+@app.get("/todosusuarios",tags=["Operaciones Crud"])
+def LeerUsuarios():
+    return {"los usuarios son": usuarios}
+
+
+
+
+#endpoint Agregar Usuario
+@app.post("/agregarusuario",tags=["Operaciones Crud"])
+def AgregarUsuario(usuario: dict):
+    for usr in usuarios:
+       if usr["id"] == usuario.get("id"):
+           raise HTTPException(status_code=400, detail="El usuario ya existe")
+    usuarios.append(usuario)
+    return usuario
+
+#endpoint put modificar usuario
+@app.put("/modificarusuario/{id}",tags=["Operaciones Crud"])
+def ModificarUsuario(id:int, nombre:str, edad:int):
+    for usr in usuarios:
+        if usr["id"] == id:
+            usr["nombre"] = nombre
+            usr["edad"] = edad
+            return usuarios
+           
+
+    raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
-    #endpoint de promedio
-@app.get("/promedio", tags=["Mi calificacion tai api"])
-def promedio():
-    return {"numero": " 5.5"}
-    
-    #endpoint parametro obligatorio
-@app.get("/usuario/{id}", tags=["Parametro obligatorio id"])
-def consultaUsuario(id: int):
-    #simulacion de base de datos
-    #consulta = select * from usuario where id = id
-    return {"se encontro el usuario con el id":id}
-    
-    #endpoint parametro opcional
-@app.get("/usuario/", tags=["Parametro opcional nombre"])
-def consultaUsuarioOpcional(id: Optional[int] = None):
-    if id is not None:
-        for us in usuarios:
-            if us['id'] == id:
-                return {"mensaje": "usuario encontrado", "usuario": us}
-        return {"mensaje": f"usuario no encontrado con el id: {id}"}
-    else:
-        return {"mensaje": "no se proporcionó un id"}
 
 
-
-
-
-
-
-
-#endpoint con varios parametro opcionales
-@app.get("/usuarios/", tags=["3 parámetros opcionales"])
-async def consulta_usuarios(
-    id: Optional[int] = None,
-    nombre: Optional[str] = None,
-    edad: Optional[int] = None
-):
-    resultados = []
-
-    for usuario in usuarios:
-        if (
-            (id is None or usuario["id"] == id) and
-            (nombre is None or usuario["nombre"].lower() == nombre.lower()) and
-            (edad is None or usuario["edad"] == edad)
-        ):
-            resultados.append(usuario)
-
-    if resultados:
-        return {"usuarios_encontrados": resultados}
-    else:
-        return {"mensaje": "No se encontraron usuarios que coincidan con los parámetros proporcionados."}
