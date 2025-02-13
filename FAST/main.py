@@ -52,6 +52,15 @@ def ModificarUsuario(id:int, nombre:str, edad:int):
            
 
     raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+
+#endpoint delete eliminar usuario
+@app.delete("/eliminarusuario/{id}",tags=["Operaciones Crud"])
+def EliminarUsuario(id:int):
+    for usr in usuarios:
+        if usr["id"] == id:
+            usuarios.remove(usr)
+            return {"message": "Usuario eliminado"}, usuarios
+    raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
-
-
+    
