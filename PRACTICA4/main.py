@@ -44,3 +44,15 @@ def AgregarTarea(id:int, titulo:str, descripcion:str, vencimiento:str, estado:st
     TASKS.append({"id":id, "titulo":titulo, "descripcion": descripcion, "vencimiento": vencimiento, "estado": estado})
     return {"id":id, "titulo":titulo, "descripcion": descripcion, "vencimiento": vencimiento, "estado": estado}
    
+#endpoint put modificar tarea
+@app.put("/modificarTarea/{id}",tags=["Operaciones Crud"])
+def ModificarTarea(id:int, titulo:str, descripcion:str, vencimiento:str, estado:str):
+    for task in TASKS:
+        if task["id"] == id:
+            task["titulo"] = titulo
+            task["descripcion"] = descripcion
+            task["vencimiento"] = vencimiento
+            task["estado"] = estado
+            return TASKS
+           
+    raise HTTPException(status_code=404, detail="Tarea no encontrada")
