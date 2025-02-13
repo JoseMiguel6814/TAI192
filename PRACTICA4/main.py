@@ -27,3 +27,10 @@ def home():
 def LeerTareas():
     return {"las Tareas son": TASKS}
 
+#endpoint consultar una tarea por id
+@app.get("/tarea/{id}",tags=["Operaciones Crud"])
+def LeerTarea(id:int):
+    for task in TASKS:
+        if task["id"] == id:
+            return task
+    raise HTTPException(status_code=404, detail="Tarea no encontrada")
