@@ -34,3 +34,12 @@ def LeerTarea(id:int):
         if task["id"] == id:
             return task
     raise HTTPException(status_code=404, detail="Tarea no encontrada")
+
+#endpoint Agregar Tarea
+@app.post("/agregarTarea",tags=["Operaciones Crud"])
+def AgregarTarea(task: dict):
+    for tsk in TASKS:
+        if tsk["id"] == task.get("id"):
+            raise HTTPException(status_code=400, detail="La tarea ya existe")
+    TASKS.append(task)
+    return task
