@@ -56,3 +56,12 @@ def ModificarTarea(id:int, titulo:str, descripcion:str, vencimiento:str, estado:
             return TASKS
            
     raise HTTPException(status_code=404, detail="Tarea no encontrada")
+
+#eliminar tarea
+@app.delete("/eliminarTarea/{id}",tags=["Operaciones Crud"])
+def EliminarTarea(id:int):
+    for task in TASKS:
+        if task["id"] == id:
+            TASKS.remove(task)
+            return TASKS
+    raise HTTPException(status_code=404, detail="Tarea no encontrada")
