@@ -1,6 +1,9 @@
 from fastapi import FastAPI, HTTPException
-from typing import Optional
-
+from typing import Optional, List
+from pydantic import BaseModel
+from modelsPydantics import ModeloUsuario, modeloAuth
+from genToken import create_token
+from fastapi.responses import JSONResponse
 
 
 app=FastAPI(
@@ -9,11 +12,15 @@ app=FastAPI(
     version='1.0.1'
     )
 
+
+
+#lista de usuarios
+
 usuarios = [
-    {"id":1, "nombre":"Juan","edad":25},
-    {"id":2, "nombre":"Maria","edad":30},
-    {"id":3, "nombre":"Pedro","edad":35},
-    {"id":4, "nombre":"Jose","edad":40}
+    {"id":1, "nombre":"Juan","edad":25, "correo":"example@example.com"},
+    {"id":2, "nombre":"Maria","edad":30,"correo":"example2@example.com"},
+    {"id":3, "nombre":"Pedro","edad":35,"correo":"exampl3@example.com"},
+    {"id":4, "nombre":"Jose","edad":40,"correo":"exampl4@example.com"}
 ]
 
 #endpoint home
@@ -21,34 +28,41 @@ usuarios = [
 def home():
     return {"message": "Hello World"}
 
-
-
+#endpoint autenticacion
+@app.post("/auth", tags=["Autentificacion"])
+def login(autorizacion: modeloAuth):
+   if autorizacion.email == "example@example.com" and autorizacion.passw == "12345678":
+       token:str = create_token(autorizacion.model_dump())
+       print(token)
+       return JSONResponse(content={"token": token})
+    
 
 #endpoint Consultar Todos
-@app.get("/todosusuarios",tags=["Operaciones Crud"])
+@app.get("/todosusuarios",response_model= List[ModeloUsuario], tags=["Operaciones Crud"])
 def LeerUsuarios():
-    return {"los usuarios son": usuarios}
+    return usuarios
 
 
 
 
 #endpoint Agregar Usuario
-@app.post("/agregarusuario",tags=["Operaciones Crud"])
-def AgregarUsuario(usuario: dict):
+@app.post("/agregarusuario", response_model= ModeloUsuario,  tags=["Operaciones Crud"])
+def AgregarUsuario(usuario: ModeloUsuario):
     for usr in usuarios:
-       if usr["id"] == usuario.get("id"):
+        if usr["id"] == usuario.id:
            raise HTTPException(status_code=400, detail="El usuario ya existe")
     usuarios.append(usuario)
     return usuario
 
 #endpoint put modificar usuario
-@app.put("/modificarusuario/{id}",tags=["Operaciones Crud"])
-def ModificarUsuario(id:int, nombre:str, edad:int):
+@app.put("/modificarusuario/{id}",response_model= ModeloUsuario,tags=["Operaciones Crud"])
+def ModificarUsuario(id:int, usuario: ModeloUsuario):
     for usr in usuarios:
         if usr["id"] == id:
-            usr["nombre"] = nombre
-            usr["edad"] = edad
-            return usuarios
+            usr["nombre"] = usuario.nombre
+            usr["edad"] = usuario.edad
+            usr["correo"] = usuario.correo
+            return usuario
            
 
     raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -62,5 +76,4 @@ def EliminarUsuario(id:int):
             usuarios.remove(usr)
             return {"message": "Usuario eliminado"}, usuarios
     raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    
     
