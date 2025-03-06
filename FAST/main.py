@@ -1,9 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,Depends
 from typing import Optional, List
 from pydantic import BaseModel
 from modelsPydantics import ModeloUsuario, modeloAuth
-from genToken import create_token
+from genToken import createToken
 from fastapi.responses import JSONResponse
+from middlewares import BearerJWT
 
 
 app=FastAPI(
@@ -32,13 +33,13 @@ def home():
 @app.post("/auth", tags=["Autentificacion"])
 def login(autorizacion: modeloAuth):
    if autorizacion.email == "example@example.com" and autorizacion.passw == "12345678":
-       token:str = create_token(autorizacion.model_dump())
+       token:str = createToken(autorizacion.model_dump())
        print(token)
        return JSONResponse(content={"token": token})
     
 
 #endpoint Consultar Todos
-@app.get("/todosusuarios",response_model= List[ModeloUsuario], tags=["Operaciones Crud"])
+@app.get("/todosusuarios",dependencies={Depends(BearerJWT())},response_model= List[ModeloUsuario], tags=["Operaciones Crud"])
 def LeerUsuarios():
     return usuarios
 
